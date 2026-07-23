@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💍 دعوة خطوبة عبد العزيز و مزن
 
-## Getting Started
+موقع دعوة خطوبة إلكتروني بطابع فيكتوري فخم — ثنائي اللغة (عربي/إنجليزي)، مبني على **Next.js 16** مع حركية سينمائية.
 
-First, run the development server:
+---
+
+## ✏️ شو لازم تعدّل (كل شي بملف واحد)
+
+افتح الملف: **[`lib/config.ts`](lib/config.ts)** وعدّل هالقيم:
+
+| القيمة | الوصف |
+|--------|--------|
+| `dateISO` | 📅 **تاريخ ووقت الخطوبة** — الأهم (للعدّاد التنازلي). الصيغة: `"2026-09-15T19:00:00"` (سنة-شهر-يوم T ساعة:دقيقة، بنظام 24 ساعة) |
+| `venue.name` / `venue.address` | 📍 اسم القاعة والعنوان (عربي + إنجليزي) |
+| `venue.mapUrl` | 🗺️ الصق رابط جوجل مابس الحقيقي (أو اتركه فارغاً للبحث بالاسم تلقائياً) |
+| `whatsappNumber` | 📱 رقم الواتساب لتأكيد الحضور — بصيغة دولية بدون `+`، مثال: `963991234567` |
+| `groom` / `bride` | أسماء العروسين (معبّأة: عبد العزيز / مزن) |
+| `quote` / `quoteRef` | الآية/العبارة (معبّأة: الروم ٢١) |
+
+> النصوص كلها ثنائية اللغة — عدّل `ar` و `en` لكل قيمة.
+
+### 🎵 الموسيقى
+ضع ملف موسيقى باسم `background.mp3` داخل مجلد `public/music/`.
+(الموقع يشتغل بدونها؛ الموسيقى تبدأ عند ضغط «افتح الدعوة».)
+
+---
+
+## ▶️ التشغيل
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install        # أول مرة فقط
+npm run dev        # وضع التطوير — http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+للنسخة النهائية:
+```bash
+npm run build
+npm start
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 النشر (لتصير الدعوة على رابط تبعتو للضيوف)
 
-## Learn More
+أسهل طريقة عبر **Vercel** (مجاني):
+1. ارفع المشروع على GitHub.
+2. ادخل [vercel.com](https://vercel.com) → New Project → اختر المستودع → Deploy.
+3. بيطلع لك رابط جاهز تبعتو بالواتساب.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎨 الثيم
+- **الألوان**: خمري (`#4A0E1C`) · فضي · أحمر ياقوتي · أسود · أبيض عاجي
+- **الخطوط**: Aref Ruqaa + Amiri (عربي) · Great Vibes + Cormorant (إنجليزي)
+- **الصور** (في `public/images/`): مأخوذة من تصاميمك، مضغوطة WebP. لتبديل أي صورة، استبدل الملف بنفس الاسم.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📂 أهم الملفات
+- `lib/config.ts` — كل المحتوى القابل للتعديل
+- `lib/i18n.tsx` — نصوص الواجهة (عربي/إنجليزي)
+- `components/` — أقسام الصفحة (Hero, Countdown, EventDetails, Rsvp...)
+- `public/images/` — صور الثيم
+- `public/music/` — الموسيقى الخلفية

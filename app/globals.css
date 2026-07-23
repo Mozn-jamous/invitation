@@ -1,49 +1,822 @@
+/* ============================================================
+   ROYAL VICTORIAN — engagement invitation, cinematic mobile scroll
+   Each scene has its OWN full-bleed background (/images/roy/*.png).
+   Palette: wine · gold · ivory.
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* wine base */
+  --wine-950: #140a0c;
+  --wine-900: #210d14;
+  --wine-800: #3d0f1c;
+  --wine-700: #4a1220;
+  --wine: #6e1b2e;
+  /* silver (royal accent — matches the silver & burgundy art) */
+  --gold: #b6bcc8;
+  --gold-bright: #e8ebf1;
+  --gold-deep: #848b98;
+  /* neutrals */
+  --cream: #f3e7cf;
+  --ivory: #f7efe0;
+
+  /* semantic */
+  --bg: var(--wine-950);
+  --text: var(--cream);
+  --heading: var(--ivory);
+  --accent: var(--gold);
+  --muted: rgba(243, 231, 207, 0.74);
+  --line: rgba(182, 188, 200, 0.34);
+
+  /* admin (internal page) compat token */
+  --gold-soft: var(--gold-bright);
+  --font-ar-display: var(--font-ar-face, "Amiri", serif);
+  --font-ar-body: var(--font-ar-body-face, "Amiri", serif);
+
+  --font-display: var(--font-latin-display, "Cinzel", serif);
+  --font-body: var(--font-serif, "Cormorant Garamond", serif);
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Arabic uses the calligraphic pair */
+[dir="rtl"] {
+  --font-display: var(--font-ar-display);
+  --font-body: var(--font-ar-body);
 }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 html {
-  height: 100%;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
-html,
 body {
-  max-width: 100vw;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.7;
   overflow-x: hidden;
+  min-height: 100dvh;
 }
 
-body {
-  min-height: 100%;
+img { max-width: 100%; display: block; }
+button { font-family: inherit; }
+a { color: inherit; }
+
+/* ---------- ONE continuous backdrop behind the whole invitation ----------
+   A single calm deep-burgundy field (soft top glow + a whisper of damask).
+   Fixed, so every section flows over the same quiet background = one page. */
+.v-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(125% 55% at 50% 6%, rgba(104, 34, 55, 0.34) 0%, transparent 58%),
+    url("/invitation/images/vic/damask.webp"),
+    linear-gradient(180deg, #26101a 0%, #190b11 55%, #120709 100%);
+  background-repeat: no-repeat, repeat, no-repeat;
+  background-size: cover, 360px, cover;
+  background-blend-mode: normal, soft-light, normal;
+}
+
+/* ---------- floating controls (music + language) ---------- */
+.controls {
+  position: fixed;
+  top: max(clamp(0.8rem, 2.4vw, 1.4rem), env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  max-width: 460px;
+  padding-inline: clamp(1rem, 4.5vw, 1.5rem);
+  z-index: 60;
+  /* force music at the visual left, language at the visual right on any dir */
+  direction: ltr;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ctrl-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--gold-bright);
+  border: 1px solid rgba(182, 188, 200, 0.45);
+  background: rgba(16, 8, 10, 0.28);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.ctrl-btn:hover { transform: translateY(-1px); border-color: var(--gold-bright); background: rgba(16, 8, 10, 0.5); }
+.ctrl-lang { font-family: var(--font-display); font-size: 0.82rem; letter-spacing: 0.06em; }
+
+/* ornamental divider — hairline · diamond · hairline */
+.v-orn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: clamp(150px, 56%, 240px);
+}
+.v-orn::before,
+.v-orn::after { content: ""; height: 1px; flex: 1; }
+.v-orn::before { background: linear-gradient(90deg, transparent, var(--gold)); }
+.v-orn::after { background: linear-gradient(90deg, var(--gold), transparent); }
+.v-orn i {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  transform: rotate(45deg);
+  background: var(--gold-bright);
+  box-shadow: 0 0 8px rgba(232, 235, 241, 0.6);
+}
+
+/* ================= SECTION SCAFFOLD ================= */
+/* the whole invitation lives in a phone-width column, centered on any screen —
+   this keeps every scene's aspect ≈ the 9:19.5 art so text lands in its zone. */
+.v-main {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 460px;
+  margin-inline: auto;
+  box-shadow: 0 0 90px rgba(0, 0, 0, 0.7);
+}
+.v-sec {
+  position: relative;
+  isolation: isolate;
+  /* natural height — sections flow continuously on the one shared backdrop */
+  width: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding:
+    clamp(3.5rem, 12vh, 6.5rem)
+    clamp(1.2rem, 5vw, 2rem);
+  gap: clamp(0.9rem, 2.6vw, 1.5rem);
+}
+/* content sits above the scene background + scrim */
+.v-sec > *:not(.v-bg-layer) { position: relative; z-index: 2; }
+
+/* the moving background image (per-scene image set below) */
+.v-bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* readability scrim — each scene sets --scrim to darken its text zone */
+.v-sec::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: var(--scrim, linear-gradient(180deg, rgba(16, 8, 10, 0.35), rgba(16, 8, 10, 0.5)));
 }
 
-a {
-  color: inherit;
+/* MOBILE INVITATION: every page fills the phone screen completely.
+   Phone ratios (≈0.44–0.48) are near the art's 0.46, so `cover` crops
+   only a sliver — no gaps, full-bleed, like a real invitation. */
+.v-cover, .v-verse, .v-letter, .v-details, .v-rsvp {
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* The COVER's bg-layer replicates `cover` sizing as a real element:
+   scale = max(secW/imgW, secH/imgH) == width: max(100%, 100dvh·ratio).
+   Children positioned in % are therefore in IMAGE coordinates — the
+   portrait can never drift off the baked oval, on any screen. */
+.v-cover .v-bg-layer {
+  inset: auto;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, calc(100dvh * 852 / 1846));
+  aspect-ratio: 852 / 1846;
+  background-size: 100% 100%;
+}
+.v-cover .v-bg-layer { background-image: url("/invitation/images/roy/cover.png"); }
+.v-verse .v-bg-layer { background-image: url("/invitation/images/roy/verse.png"); }
+.v-letter .v-bg-layer { background-image: url("/invitation/images/roy/letter.png"); }
+.v-details .v-bg-layer { background-image: url("/invitation/images/roy/details.png"); }
+.v-rsvp .v-bg-layer { background-image: url("/invitation/images/roy/rsvp.png"); }
+
+/* ================= TEXT PRIMITIVES ================= */
+.v-kicker {
+  font-family: var(--font-body);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  font-size: clamp(0.7rem, 2.8vw, 0.86rem);
+  color: var(--gold-bright);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+[dir="rtl"] .v-kicker { letter-spacing: 0.16em; text-transform: none; }
+
+.v-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 7vw, 2.9rem);
+  line-height: 1.2;
+  color: var(--heading);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.75);
+}
+.v-title-accent { color: var(--gold-bright); }
+
+.v-body {
+  font-family: var(--font-body);
+  font-size: clamp(1.05rem, 4.4vw, 1.3rem);
+  line-height: 1.95;
+  color: var(--text);
+  max-width: 34ch;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
+}
+.v-muted { color: var(--muted); }
+
+.v-names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.1rem, 1vw, 0.4rem);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 9.5vw, 3rem);
+  line-height: 1.15;
+  color: var(--heading);
+  text-shadow: 0 2px 22px rgba(0, 0, 0, 0.85), 0 0 46px rgba(0, 0, 0, 0.55);
+}
+.v-names .v-amp {
+  font-size: 0.44em;
+  color: var(--gold-bright);
+  font-family: var(--font-display);
+}
+
+/* gilded thin rule used under titles */
+.v-rule {
+  width: clamp(90px, 34vw, 180px);
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.9;
+}
+
+/* ================= COVER ================= */
+/* the ornate silver frame is baked into the art — keep the scrim almost
+   nil so the metal stays crisp; only a faint bottom lift for the date. */
+.v-cover {
+  /* no text on the cover — let the art breathe unshaded */
+  --scrim: transparent;
+}
+
+/* couple illustration, ellipse-masked, seated inside the silver oval frame */
+/* box matches the measured oval OPENING (534×697 of 852×1846, center
+   49.5%/39.8%) with a hair of overlap so the art tucks under the ring.
+   %s are relative to .v-bg-layer == image coordinates. */
+.v-cover .v-cover-photo {
+  position: absolute;
+  top: 39.6%;
+  left: 49.5%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  aspect-ratio: 534 / 697;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: inset 0 0 16px 5px rgba(12, 6, 9, 0.45);
+  animation: photoIn 1.4s ease both;
+}
+.v-cover .v-cover-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+  animation: coverZoom 16s ease-in-out 1.4s infinite alternate;
+}
+@keyframes photoIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes coverZoom { from { transform: scale(1); } to { transform: scale(1.06); } }
+
+/* silver monogram crest below the frame — fills the lower space + glows */
+.v-cover .v-cover-crest {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  top: 76%;
+  transform: translateY(-50%);
+  height: 13.5%;
+  width: auto;
+  z-index: 2;
+  opacity: 0;
+  filter: brightness(0) invert(0.88) drop-shadow(0 0 10px rgba(232, 235, 241, 0.2));
+  animation:
+    crestIn 1.6s ease 0.7s forwards,
+    crestGlow 4.5s ease-in-out 2.4s infinite;
+}
+@keyframes crestIn {
+  from { opacity: 0; transform: translateY(-42%) scale(0.9); }
+  to   { opacity: 0.9; transform: translateY(-50%) scale(1); }
+}
+@keyframes crestGlow {
+  0%, 100% { filter: brightness(0) invert(0.86) drop-shadow(0 0 8px rgba(232, 235, 241, 0.16)); }
+  50%      { filter: brightness(0) invert(0.93) drop-shadow(0 0 20px rgba(232, 235, 241, 0.42)); }
+}
+
+/* wordless scroll cue — two silver light-drops falling in sequence */
+/* .v-cover prefix keeps this winning over the generic `.v-sec > *` position rule */
+.v-cover .v-scroll {
+  position: absolute;
+  bottom: calc(clamp(1.1rem, 3.5vh, 1.9rem) + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 44px;
+  z-index: 3;
+}
+.v-drop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 16px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, transparent, var(--gold-bright));
+  opacity: 0;
+  animation: vfall 2.6s ease-in infinite;
+}
+.v-drop:nth-child(2) { animation-delay: 1.3s; }
+@keyframes vfall {
+  0%   { transform: translateY(-6px); opacity: 0; }
+  25%  { opacity: 0.9; }
+  70%  { opacity: 0.35; }
+  100% { transform: translateY(34px); opacity: 0; }
+}
+
+/* ================= AMBIENT MOTION ================= */
+/* warm candle-glow halo that flickers over the flames baked into the art.
+   lives inside .v-bg-layer so it sits over the image, under text/scrim. */
+.v-candle {
+  position: absolute;
+  width: 90px;
+  height: 130px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle,
+    rgba(255, 200, 130, 0.30) 0%,
+    rgba(255, 168, 92, 0.13) 38%,
+    transparent 70%);
+  filter: blur(6px);
+  mix-blend-mode: screen;
+  animation: candleFlicker 3.4s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+@keyframes candleFlicker {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  22%      { opacity: 0.95; transform: translate(-50%, -51%) scale(1.07); }
+  47%      { opacity: 0.48; transform: translate(-50%, -49.5%) scale(0.96); }
+  71%      { opacity: 0.82; transform: translate(-50%, -50.5%) scale(1.04); }
+}
+
+/* silver light-motes drifting gently upward across the whole invitation */
+.v-embers {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  overflow: hidden;
+}
+.v-embers i {
+  position: absolute;
+  bottom: -12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(240, 242, 247, 0.95), rgba(200, 206, 216, 0) 70%);
+  opacity: 0;
+  animation: emberRise linear infinite;
+  will-change: transform, opacity;
+}
+@keyframes emberRise {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  8%   { opacity: 0.8; }
+  50%  { transform: translateY(-52vh) translateX(10px) scale(1.1); }
+  92%  { opacity: 0.45; }
+  100% { transform: translateY(-105vh) translateX(-6px) scale(0.8); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v-embers { display: none; }
+  .v-candle { animation: none; opacity: 0.6; }
+}
+
+/* inner sections are transparent over the one continuous backdrop — no
+   per-section scrim (that would band the shared background). */
+.v-verse, .v-letter, .v-details, .v-rsvp {
+  --scrim: transparent;
+  justify-content: center;
+}
+
+/* ================= VERSE ================= */
+.v-verse-wrap {
+  width: min(74%, 400px);
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.9rem, 2.6vw, 1.4rem);
+}
+.v-verse-bism {
+  font-family: var(--font-ar-display);
+  font-size: clamp(1.05rem, 4.6vw, 1.4rem);
+  color: var(--gold-bright);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+  margin-bottom: clamp(0.4rem, 1.6vw, 0.8rem);
+}
+.v-verse-text {
+  font-family: var(--font-ar-display);
+  font-size: clamp(1.3rem, 6vw, 1.9rem);
+  line-height: 2.1;
+  color: var(--ivory);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+}
+[dir="ltr"] .v-verse-text { font-family: var(--font-body); font-style: italic; }
+.v-verse-ref { font-family: var(--font-body); color: var(--gold-bright); font-size: clamp(0.82rem, 3vw, 1rem); }
+
+/* ================= LETTER ================= */
+/* couple monogram (burgundy PNG) tinted to silver so it reads on the wall */
+.v-monogram {
+  display: block;
+  width: auto;
+  height: clamp(52px, 12vw, 74px);
+  margin: 0 auto;
+  filter: brightness(0) invert(0.82) drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+  opacity: 0.92;
+}
+/* decorative title, like the reference invitation's heading */
+.v-letter-title {
+  font-family: var(--font-ar-display);
+  font-weight: 700;
+  font-size: clamp(1.7rem, 8vw, 2.6rem);
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  background: linear-gradient(180deg, #f4f6f9 0%, var(--gold-bright) 46%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.7));
+  margin-bottom: clamp(0.2rem, 1.2vw, 0.5rem);
+}
+[dir="ltr"] .v-letter-title { font-family: var(--font-display); }
+
+/* body: elegant, airy, a hair brighter than default */
+.v-letter .v-letter-body {
+  max-width: 34ch;
+  font-size: clamp(1.02rem, 4.4vw, 1.26rem);
+  line-height: 2.15;
+  color: var(--ivory);
+}
+/* names are the focal point — large, silver-gilded, side by side */
+.v-letter .v-letter-names {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  gap: 0.28em;
+  font-size: clamp(1.7rem, 8.5vw, 2.7rem);
+  margin-block: clamp(0.3rem, 1.5vw, 0.7rem);
+  background: linear-gradient(180deg, #f4f6f9 0%, var(--gold-bright) 46%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 3px 14px rgba(0, 0, 0, 0.7));
+}
+.v-letter .v-letter-names .v-amp {
+  font-size: 0.5em;
+  color: var(--gold);
+  -webkit-text-fill-color: currentColor;
+}
+.v-letter-close {
+  font-size: clamp(0.95rem, 4vw, 1.14rem);
+  line-height: 1.9;
+}
+/* reads like an invitation, not an article — airier vertical rhythm */
+.v-letter { gap: clamp(0.9rem, 2.9vh, 1.7rem); }
+
+/* ✦ LUXURY: a slow silver shine that glides across gilded text */
+.v-title,
+.v-letter-title,
+.v-letter .v-letter-names {
+  background-image: linear-gradient(
+    105deg,
+    var(--gold) 0%,
+    var(--gold-bright) 38%,
+    #ffffff 50%,
+    var(--gold-bright) 62%,
+    var(--gold) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: giltShine 8s ease-in-out infinite;
+}
+.v-letter .v-letter-names .v-amp { -webkit-text-fill-color: var(--gold); }
+@keyframes giltShine {
+  0%, 100% { background-position: 100% 50%; }
+  50%      { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v-title, .v-letter-title, .v-letter .v-letter-names { animation: none; }
+}
+
+/* delicate silver divider with a center diamond, between sections */
+.v-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  width: min(56%, 200px);
+  margin-inline: auto;
+}
+.v-divider::before,
+.v-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+}
+.v-divider::before { background: linear-gradient(90deg, transparent, var(--gold)); }
+.v-divider::after { background: linear-gradient(90deg, var(--gold), transparent); }
+.v-divider i {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  transform: rotate(45deg);
+  background: var(--gold-bright);
+  box-shadow: 0 0 8px rgba(232, 235, 241, 0.5);
+}
+
+/* ================= GLASS CARD (details / rsvp) ================= */
+.v-glass {
+  /* stays INSIDE the art's ornate border (~8% margin each side) */
+  width: min(82%, 360px);
+  /* a block in an RTL wrapper hugs the right edge without this — center it */
+  margin-inline: auto;
+  padding: clamp(1.4rem, 5.5vw, 2.1rem) clamp(1.3rem, 5vw, 1.9rem);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(40, 16, 26, 0.6), rgba(16, 8, 12, 0.66));
+  border: 1px solid rgba(182, 188, 200, 0.42);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(232, 235, 241, 0.2);
+  backdrop-filter: blur(11px) saturate(1.1);
+  -webkit-backdrop-filter: blur(11px) saturate(1.1);
+}
+
+/* ================= DETAILS ================= */
+.v-rows { display: flex; flex-direction: column; gap: clamp(1rem, 3.2vw, 1.5rem); width: 100%; }
+.v-row { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+.v-row + .v-row { padding-top: clamp(1rem, 3.2vw, 1.5rem); border-top: 1px solid var(--line); }
+.v-row-ic { width: 40px; height: 40px; object-fit: contain; margin-bottom: 0.3rem; opacity: 0.95; }
+.v-row-l { font-family: var(--font-body); letter-spacing: 0.14em; color: var(--gold-bright); font-size: clamp(0.82rem, 3.2vw, 0.98rem); }
+.v-row-v { font-family: var(--font-display); color: var(--ivory); font-size: clamp(1.2rem, 5vw, 1.7rem); }
+.v-row-sub { color: var(--muted); font-size: clamp(0.86rem, 3.2vw, 1rem); }
+
+/* ================= LOCATION ================= */
+/* silver CTA button with a soft sheen sweep */
+.v-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 48px;
+  margin-top: 0.4rem;
+  padding: 0.85rem 2.1rem;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(0.95rem, 3.6vw, 1.08rem);
+  color: #241016;
   text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--gold-bright);
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold) 55%, var(--gold-bright));
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.v-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transform: skewX(-18deg);
+  animation: vsweep 4.5s ease-in-out infinite;
+}
+@keyframes vsweep {
+  0%, 62% { left: -60%; }
+  100% { left: 130%; }
+}
+.v-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55); }
+
+/* ================= COUNTDOWN ================= */
+.v-cd { display: flex; gap: clamp(0.55rem, 2.4vw, 1rem); flex-wrap: wrap; justify-content: center; }
+.v-cd-cell {
+  min-width: clamp(66px, 20vw, 92px);
+  padding: clamp(0.8rem, 2.6vw, 1.2rem) clamp(0.4rem, 1.6vw, 0.7rem);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(60, 24, 38, 0.5), rgba(16, 8, 12, 0.58));
+  border: 1px solid rgba(182, 188, 200, 0.44);
+  box-shadow: inset 0 1px 0 rgba(232, 235, 241, 0.18), 0 10px 24px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.v-cd-cell b {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 7vw, 2.4rem);
+  font-weight: 700;
+  color: var(--gold-bright);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.v-cd-cell i { font-family: var(--font-body); font-style: normal; font-size: clamp(0.66rem, 2.6vw, 0.82rem); color: var(--cream); }
+
+/* ===== merged DETAILS page (details + location + countdown) ===== */
+.v-details { gap: clamp(1rem, 3.2vh, 1.7rem); padding-block: clamp(2.4rem, 7vh, 3.6rem); }
+.v-cd-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.7rem, 2.4vw, 1rem);
+}
+.v-cd-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 5vw, 1.55rem);
+  color: var(--heading);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.7);
+}
+/* compact countdown cells inside the merged page */
+.v-details .v-cd { gap: clamp(0.4rem, 1.8vw, 0.7rem); }
+.v-details .v-cd-cell {
+  min-width: clamp(56px, 16.5vw, 74px);
+  padding: clamp(0.55rem, 2vw, 0.85rem) clamp(0.3rem, 1.3vw, 0.55rem);
+}
+.v-details .v-cd-cell b { font-size: clamp(1.35rem, 5.6vw, 1.9rem); }
+
+/* ================= RSVP ================= */
+.pf { display: flex; flex-direction: column; gap: clamp(0.7rem, 2.4vw, 1rem); width: 100%; text-align: start; }
+.pf-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.pf-field span { font-family: var(--font-body); font-size: clamp(0.82rem, 3vw, 0.94rem); letter-spacing: 0.06em; color: var(--gold-bright); }
+.pf-field input,
+.pf-field textarea {
+  font-family: var(--font-body);
+  font-size: max(16px, clamp(0.95rem, 3.6vw, 1.05rem));
+  min-height: 44px;
+  color: var(--ivory);
+  background: rgba(255, 250, 240, 0.07);
+  border: 1px solid rgba(182, 188, 200, 0.38);
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  width: 100%;
+  resize: none;
+}
+.pf-field input:focus,
+.pf-field textarea:focus { outline: 2px solid rgba(232, 235, 241, 0.5); outline-offset: 1px; border-color: var(--gold-bright); background: rgba(255, 250, 240, 0.11); }
+.pf-field input::placeholder,
+.pf-field textarea::placeholder { color: rgba(243, 231, 207, 0.42); }
+.pf-radios { display: flex; gap: 0.7rem; }
+.pf-radio {
+  flex: 1;
+  min-height: 44px;
+  padding: 0.65rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(182, 188, 200, 0.38);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 3.2vw, 1rem);
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+.pf-radio.on {
+  color: #241016;
+  border-color: var(--gold-bright);
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold-bright));
+  font-weight: 700;
+}
+.pf-send {
+  margin-top: 0.4rem;
+  min-height: 48px;
+  padding: 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--gold-bright);
+  background: linear-gradient(135deg, var(--gold-deep), var(--gold) 55%, var(--gold-bright));
+  color: #241016;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(0.98rem, 3.6vw, 1.12rem);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease);
+}
+.pf-send:hover:not(:disabled) { transform: translateY(-2px); }
+.pf-send:disabled { opacity: 0.5; cursor: default; }
+.pf-err { color: #ffb3b3; font-size: 0.88rem; }
+.pf-done { text-align: center; padding: 1.4rem 0; }
+.pf-done-t { font-family: var(--font-ar-display); font-size: clamp(1.1rem, 5vw, 1.5rem); color: var(--gold-bright); }
+
+/* ================= FOOTER ================= */
+.v-footer {
+  --scrim: linear-gradient(180deg, rgba(10, 5, 8, 0.12) 0%, rgba(10, 5, 8, 0.32) 52%, rgba(10, 5, 8, 0.78) 100%);
+  justify-content: flex-end;
+  padding-bottom: calc(clamp(3.5rem, 12vh, 6rem) + env(safe-area-inset-bottom));
+  gap: clamp(0.9rem, 3vw, 1.4rem);
+}
+.v-footer .v-body { max-width: 30ch; }
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .v-bg-layer { animation: none; transform: scale(1.05); }
+  .v-scroll span { animation: none; }
+  .v-btn::after { animation: none; display: none; }
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* ---------- phone tuning ---------- */
+@media (max-width: 600px) {
+  .v-cd-cell { min-width: 68px; }
+  .v-verse-wrap { width: min(72%, 320px); }
 }
+
+/* ============================================================
+   ADMIN — guest list (RSVP backend, internal page) — preserved
+   ============================================================ */
+.adm {
+  min-height: 100dvh;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  background: linear-gradient(180deg, #2b0710 0%, #14060b 100%);
+  color: #f0e2c4;
+  font-family: var(--font-ar-body, serif);
+  direction: rtl;
+}
+.adm-title {
+  font-family: var(--font-ar-display, serif);
+  font-size: clamp(1.6rem, 6vw, 2.6rem);
+  color: var(--gold-soft);
+  text-align: center;
+  margin-bottom: 1.6rem;
+}
+.adm-login { max-width: 340px; margin: 3rem auto 0; display: flex; flex-direction: column; gap: 0.8rem; }
+.adm-login input {
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 178, 106, 0.4);
+  background: rgba(255, 250, 238, 0.06);
+  color: #f0e2c4;
+  font-size: 1rem;
+  text-align: center;
+}
+.adm-login button {
+  padding: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 178, 106, 0.7);
+  background: linear-gradient(135deg, #7a1230, #4a0e1c);
+  color: #f4ebcf;
+  font-family: var(--font-ar-display, serif);
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+.adm-err { color: #ff9a9a; text-align: center; font-size: 0.9rem; }
+.adm-stats { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.4rem; }
+.adm-stats span {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(212, 178, 106, 0.1);
+  border: 1px solid rgba(212, 178, 106, 0.3);
+  font-size: 0.9rem;
+}
+.adm-stats b { color: var(--gold-soft); font-size: 1.1rem; }
+.adm-table-wrap { overflow-x: auto; max-width: 1000px; margin: 0 auto; }
+.adm-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.adm-table th,
+.adm-table td { padding: 0.7rem 0.9rem; text-align: right; border-bottom: 1px solid rgba(212, 178, 106, 0.18); }
+.adm-table th { color: var(--gold-soft); font-weight: 700; white-space: nowrap; }
+.adm-table td.yes { color: #9fe0a0; }
+.adm-table td.no { color: #e0a0a0; }
+.adm-empty { text-align: center; color: #b09a78; padding: 2rem; }
